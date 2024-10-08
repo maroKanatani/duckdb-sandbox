@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css";
+import * as duckdb from "@duckdb/duckdb-wasm";
+import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
+import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
+import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
+import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
+import { Sample } from "./components/Sample";
+import {
+  DuckDBConnectionProvider,
+  DuckDBPlatform,
+  DuckDBProvider,
+} from "@duckdb/react-duckdb";
+
+const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.WARNING);
+
+const DUCKDB_BUNDLES: duckdb.DuckDBBundles = {
+  mvp: {
+    mainModule: duckdb_wasm,
+    mainWorker: mvp_worker,
+  },
+  eh: {
+    mainModule: duckdb_wasm_eh,
+    mainWorker: eh_worker,
+  },
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <DuckDBPlatform logger={logger} bundles={DUCKDB_BUNDLES}>
+      <DuckDBProvider>
+        <DuckDBConnectionProvider>
+          <Sample />
+        </DuckDBConnectionProvider>
+      </DuckDBProvider>
+    </DuckDBPlatform>
+  );
 }
 
-export default App
+export default App;
